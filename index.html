@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QIS Virtual School</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    :root {
+      --primary: #ffca28; /* Зарди дурахшон */
+      --secondary: #26a69a; /* Сабзи баҳрии мулоим */
+      --accent: #ef6c00; /* Норинҷии гарм */
+      --light: linear-gradient(135deg, #e3f2fd, #bbdefb); /* Градиенти мулоим */
+      --dark: #263238; /* Хокистарии тираи муосир */
+      --shadow: rgba(0, 0, 0, 0.15);
+      --font-title: 'Baloo 2', cursive;
+      --font-body: 'Comic Neue', cursive;
+      --transition: all 0.3s ease-in-out;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: var(--font-body), sans-serif;
+    }
+    body {
+      background: var(--light) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><path fill="%23ffffff" fill-opacity="0.2" d="M20 5l5 15h15l-12 8 4 14-12-8-12 8 4-14-12-8h15z"/></svg>') repeat;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      color: var(--dark);
+    }
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      width: 100%;
+    }
+    h1 {
+      color: var(--dark);
+      font-family: var(--font-title);
+      font-size: 3.5rem;
+      margin-bottom: 10px;
+      text-shadow: 3px 3px 0px var(--primary), 5px 5px 0px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      animation: bounceIn 1s ease;
+    }
+    h1::before, h1::after {
+     
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      color: var(--accent);
+      font-size: 2.5rem;
+      animation: rotateIcon 2s infinite linear;
+    }
+    .subtitle {
+      color: var(--secondary);
+      font-family: var(--font-title);
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      font-weight: bold;
+      text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.1);
+    }
+    .game-container {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 15px;
+      max-width: 1200px;
+      width: 100%;
+      margin-bottom: 30px;
+    }
+    .category {
+      background: linear-gradient( #febf2c);
+      color: rgb(0, 0, 0);
+      padding: 15px 10px;
+      text-align: center;
+      border-radius: 15px;
+      font-family: var(--font-title);
+      font-size: 1.3rem;
+      font-weight: bold;
+      box-shadow: 0 6px 12px var(--shadow);
+      transition: var(--transition);
+      border: 3px solid var(--dark);
+      position: relative;
+      overflow: hidden;
+    }
+    .category::before {
+     
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      opacity: 0.2;
+      font-size: 2rem;
+      color: white;
+    }
+    .category:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 10px 20px var(--shadow);
+    }
+    .question-cell {
+      background: linear-gradient(45deg, var(--secondary), #4db6ac);
+      color: white;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 15px;
+      font-family: var(--font-title);
+      font-size: 2rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 6px 12px var(--shadow);
+      transition: var(--transition);
+      border: 3px solid var(--dark);
+      position: relative;
+      overflow: hidden;
+    }
+    .question-cell:hover {
+      transform: scale(1.05) rotate(1deg);
+      box-shadow: 0 10px 20px var(--shadow);
+      animation: pulse 0.5s infinite alternate;
+    }
+    .question-cell.answered {
+      background: linear-gradient(45deg, #b0bec5, #90a4ae);
+      color: #546e7a;
+      cursor: default;
+      transform: scale(0.95);
+      box-shadow: inset 0 4px 6px rgba(0,0,0,0.2);
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.4s ease;
+    }
+    .modal-content {
+      background: linear-gradient(135deg, white, #e3f2fd);
+      padding: 30px;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 850px;
+      box-shadow: 0 0 0 8px var(--primary), 0 10px 20px var(--shadow);
+      border: 5px solid white;
+      animation: popIn 0.4s ease;
+      position: relative;
+    }
+    .close-btn {
+      position: absolute;
+      top: -20px;
+      right: -20px;
+      font-size: 2rem;
+      cursor: pointer;
+      color: white;
+      background-color: var(--accent);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 4px solid white;
+      transition: var(--transition);
+    }
+    .close-btn:hover {
+      transform: rotate(180deg) scale(1.1);
+      box-shadow: 0 5px 15px var(--shadow);
+    }
+    .question-text {
+      font-family: var(--font-title);
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 25px;
+      color: var(--dark);
+      line-height: 1.5;
+      text-align: center;
+      text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.1);
+    }
+    .options-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .option-btn {
+      background: linear-gradient(45deg, #eceff1, #cfd8dc);
+      color: var(--dark);
+      padding: 15px;
+      border: 3px solid var(--dark);
+      border-radius: 12px;
+      font-family: var(--font-body);
+      font-size: 1.8rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: center;
+      box-shadow: 0 4px 8px var(--shadow);
+      text-decoration: none; /* Ensure no underline */
+    }
+    .option-btn:hover {
+      background: linear-gradient(45deg, var(--secondary), #4db6ac);
+      color: white;
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px var(--shadow);
+    }
+    .option-btn:active {
+      transform: scale(0.95); /* Uniform animation on click for all options */
+      transition: transform 0.1s ease;
+    }
+    .option-btn:focus {
+  outline: none;
+}
+    .answer-input {
+      background: linear-gradient(45deg, #eceff1, #cfd8dc);
+      color: var(--dark);
+      padding: 15px;
+      border: 3px solid var(--dark);
+      border-radius: 12px;
+      font-family: var(--font-body);
+      font-size: 1.2rem;
+      width: 100%;
+      box-shadow: 0 4px 8px var(--shadow);
+      margin-bottom: 15px;
+    }
+    .result {
+      text-align: center;
+      font-family: var(--font-title);
+      font-size: 1.8rem;
+      margin-top: 20px;
+      font-weight: bold;
+      display: none;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px var(--shadow);
+      animation: resultPop 0.5s ease;
+    }
+    .correct {
+      color: white;
+      background: linear-gradient(45deg, var(--secondary), #4db6ac);
+    }
+    .incorrect {
+      color: white;
+      background: linear-gradient(45deg, #e53935, #d81b60);
+    }
+    .score-board {
+      background: linear-gradient(45deg, white, #eceff1);
+      padding: 15px 30px;
+      border-radius: 50px;
+      box-shadow: 0 6px 12px var(--shadow);
+      font-family: var(--font-title);
+      font-size: 1.4rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      border: 3px solid var(--dark);
+    }
+    .score-value, .high-score-value {
+      color: var(--accent);
+      font-size: 2rem;
+      text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.1);
+    }
+    .reset-btn {
+      background: linear-gradient(45deg, #e53935, #d81b60);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-family: var(--font-title);
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-left: auto;
+      box-shadow: 0 6px 12px var(--shadow);
+    }
+    .reset-btn:hover {
+      background: linear-gradient(45deg, #d81b60, #e53935);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px var(--shadow);
+    }
+    .timer {
+      text-align: center;
+      font-family: var(--font-title);
+      font-size: 1.6rem;
+      margin-bottom: 15px;
+      color: var(--dark);
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .timer::before {
+      content: '\f017';
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      color: var(--accent);
+      animation: rotateIcon 2s infinite linear;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes bounceIn {
+      0% { transform: scale(0.8); opacity: 0; }
+      50% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+    @keyframes pulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.03); }
+    }
+    @keyframes resultPop {
+      0% { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes rotateIcon {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    @media (max-width: 768px) {
+      .game-container {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+      .category {
+        font-size: 0.5rem;
+        padding: 10px 5px;
+      }
+      .question-cell {
+        height: 80px;
+        font-size: 1.4rem;
+      }
+      h1 {
+        font-size: 2.5rem;
+      }
+      .modal-content {
+        padding: 20px;
+      }
+      .question-text {
+        font-size: 1.6rem;
+      }
+      .options-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 style="font-size: 90px;">
+      <span style="color: #EB6020; font-size: 70px;">Q</span>
+      <span style="color: #fe0000; font-size: 70px;">I</span>
+      <span style="color: #1F3155; font-size: 70px;">S</span> Virtual School
+    </h1>
+    <div class="subtitle">Test your knowledge of famous book characters!</div>
+  </header>
+  <div class="score-board">
+    <span><i class="fas fa-star" style="color: #ffca28;"></i> Score: <span class="score-value">0</span></span>
+    <span><i class="fas fa-trophy" style="color: #ef6c00;"></i> High Score: <span class="high-score-value">0</span></span>
+    <button class="reset-btn">Reset Game</button>
+  </div>
+  <div class="game-container" id="gameBoard"></div>
+
+  <div class="modal" id="questionModal">
+    <div class="modal-content">
+      <span class="close-btn" aria-label="Close modal">&times;</span>
+      <div class="timer" id="timerDisplay">Time left: 30s</div>
+      <div class="question-text" id="modalQuestion"></div>
+      <div class="options-container" id="optionsContainer"></div>
+      <div class="result" id="resultMessage"></div>
+    </div>
+  </div>
+
+  <!-- Audio elements for sounds -->
+  <audio id="correctSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio> <!-- Placeholder for correct sound; replace with actual URL -->
+  <audio id="incorrectSound" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio> <!-- Placeholder for incorrect sound; replace with actual URL -->
+
+  <script>
+    const categories = [
+      "Animal....", "Best Friends", "Characters", "Complete...... ", "Authors", "Settings"
+    ];
+    const questions = [
+      [
+        { value: 100, question: "In the popular police comic, the cop is half man and half...", answer: "dog", altAnswers: ["dog man"], options: ["dog", "cat", "bird", "fish"] },
+        { value: 200, question: "In Spring According to Humphrey, what kind of animal is Humphrey?", answer: "hamster", altAnswers: ["a hamster"], options: ["hamster", "rabbit", "mouse", "guinea pig"] },
+        { value: 300, question: "In One Dog and His Boy, what type of dog is Fleck?", answer: "terrier", altAnswers: ["jack russell terrier"], options: ["terrier", "bulldog", "poodle", "beagle"] },
+        { value: 400, question: "What is the name of the baseball team in Get a Grip, Vivy Cohen?", answer: "the flying squirrels", altAnswers: ["flying squirrels"], options: ["the flying squirrels", "the red hawks", "the blue jays", "the wild cats"] },
+        { value: 500, question: "In the Wizard of Oz, Dorothy meets a Tin Man, a Scarecrow and a cowardly...", answer: "lion", altAnswers: ["cowardly lion"], options: ["lion", "tiger", "bear", "wolf"] }
+      ],
+      [
+        { value: 100, question: "Greg's best friend in Diary of a Wimpy Kid", answer: "rowley jefferson", altAnswers: ["rowley"], options: ["rowley jefferson", "manny heffley", "rodrick heffley", "fregley"] },
+        { value: 200, question: "Suzy Smith's best friend in the Great Brain Robbery", answer: "ursel the bear", altAnswers: ["ursel"], options: ["ursel the bear", "tom fitzgerald", "j.d. fitzgerald", "sammy leeds"] },
+        { value: 300, question: "Who is Ivy's best friend in the popular series?", answer: "bean", altAnswers: [], options: ["bean", "nancy", "kate", "emma"] },
+        { value: 400, question: "Who is Lucky's best friends in Spirit Riding Free?", answer: "pru and abigail", altAnswers: ["pru", "abigail"], options: ["pru and abigail", "emma and kate", "lily and sophia", "claire and mia"] },
+        { value: 500, question: "Who is Meg's best friend in A Wrinkle in Time?", answer: "calvin o'keefe", altAnswers: ["calvin"], options: ["calvin o'keefe", "charles wallace", "mr. murry", "mrs. who"] }
+      ],
+      [
+        { value: 100, question: "This wooden boy's nose grows longer every time he lies", answer: "pinocchio", altAnswers: [], options: ["pinocchio", "geppetto", "jiminy cricket", "figaro"] },
+        { value: 200, question: "What is the name of Greg's older brother in the Diary of a Wimpy Kid?", answer: "rodrick", altAnswers: ["rodrick heffley"], options: ["rodrick", "greg", "manny", "rowley"] },
+        { value: 300, question: "What is the name of Meg's younger brother in A Wrinkle in Time?", answer: "charles wallace", altAnswers: ["charles wallace murry"], options: ["charles wallace", "calvin", "mr. murry", "dennys"] },
+        { value: 400, question: "The name of Dorothy's dog in the Wizard of Oz?", answer: "toto", altAnswers: [], options: ["toto", "lassie", "rex", "max"] },
+        { value: 500, question: "What is Hal's dog's name in the book 'One Dog and His Boy'?", answer: "fleck", altAnswers: [], options: ["fleck", "spot", "buddy", "rover"] }
+      ],
+      [
+        { value: 100, question: "The Diary of a...", answer: "wimpy kid", altAnswers: ["diary of a wimpy kid"], options: ["wimpy kid", "brave kid", "cool kid", "smart kid"] },
+        { value: 200, question: "Goldilocks and the...", answer: "three bears", altAnswers: [], options: ["three bears", "three pigs", "three wolves", "three goats"] },
+        { value: 300, question: "The Great Brain...", answer: "robbery", altAnswers: ["the great brain robbery"], options: ["robbery", "adventure", "mystery", "heist"] },
+        { value: 400, question: "Disaster Strikes: ...", answer: "blizzard night", altAnswers: [], options: ["blizzard night", "tornado day", "flood morning", "earthquake evening"] },
+        { value: 500, question: " Harold and the...", answer: "purple crayon", altAnswers: [], options: ["purple crayon", "red pencil", "blue marker", "green brush"] }
+      ],
+      [
+        { value: 100, question: "Who created the Dog Man series?", answer: "dav pilkey", altAnswers: ["dav pilkey"], options: ["dav pilkey", "jeff kinney", "dr seuss", "dan gutman"] },
+        { value: 200, question: "Who wrote Diary of a Wimpy Kid?", answer: "jeff kinney", altAnswers: [], options: ["jeff kinney", "dav pilkey", "madeleine l'engle", "roald dahl"] },
+        { value: 300, question: "Who wrote Green Eggs and Ham?", answer: "dr seuss", altAnswers: ["dr. seuss"], options: ["dr seuss", "eric carle", "mo willems", "beatrix potter"] },
+        { value: 400, question: "What book did Madeleine L'Engle write?", answer: "a wrinkle in time", altAnswers: [], options: ["a wrinkle in time", "charlotte's web", "matilda", "the secret garden"] },
+        { value: 500, question: "Who wrote The Edison Mystery: Qwerty Stevens, Back in Time?", answer: "dan gutman", altAnswers: [], options: ["dan gutman", "rick riordan", "j.k. rowling", "louis sachar"] }
+      ],
+      [
+        { value: 100, question: "What story is set in the magical, colorful land of Oz?", answer: "the wizard of oz", altAnswers: ["wizard of oz"], options: ["the wizard of oz", "alice in wonderland", "peter pan", "narnia"] },
+        { value: 200, question: "What story takes place in Room 216 at Longfellow School?", answer: "spring according to humphrey", altAnswers: [], options: ["spring according to humphrey", "diary of a wimpy kid", "a beagle in a backpack", "charlotte's web"] },
+        { value: 300, question: "What story takes place at Animal Ark Vet Clinic?", answer: "a beagle in a backpack", altAnswers: [], options: ["a beagle in a backpack", "spring according to humphrey", "one dog and his boy", "the wizard of oz"] },
+        { value: 400, question: "Spirit Riding Free is set in what time period?", answer: "1900s", altAnswers: ["1900", "early 1900s", "late 1800s"], options: ["1900s", "1700s", "2000s", "1800s"] },
+        { value: 500, question: "What story is set on the planets Uriel and Camazotz?", answer: "a wrinkle in time", altAnswers: [], options: ["a wrinkle in time", "the lion, the witch and the wardrobe", "harry potter", "percy jackson"] }
+      ]
+    ];
+    let score = 0;
+    let highScore = localStorage.getItem('highScore') || 0;
+    let currentQuestion = null;
+    let answeredQuestions = Array(categories.length).fill().map(() => Array(5).fill(false));
+    let timerInterval = null;
+    let timeLeft = 30;
+
+    const gameBoard = document.getElementById('gameBoard');
+    const questionModal = document.getElementById('questionModal');
+    const modalQuestion = document.getElementById('modalQuestion');
+    const optionsContainer = document.getElementById('optionsContainer');
+    const resultMessage = document.getElementById('resultMessage');
+    const closeBtn = document.querySelector('.close-btn');
+    const scoreValue = document.querySelector('.score-value');
+    const highScoreValue = document.querySelector('.high-score-value');
+    const resetBtn = document.querySelector('.reset-btn');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const correctSound = document.getElementById('correctSound');
+    const incorrectSound = document.getElementById('incorrectSound');
+
+    function initializeGameBoard() {
+      gameBoard.innerHTML = '';
+      highScoreValue.textContent = highScore;
+      categories.forEach(category => {
+        const categoryElement = document.createElement('div');
+        categoryElement.className = 'category';
+        categoryElement.textContent = category;
+        gameBoard.appendChild(categoryElement);
+      });
+      for (let i = 0; i < 5; i++) {
+        categories.forEach((category, categoryIndex) => {
+          const questionCell = document.createElement('div');
+          questionCell.className = 'question-cell';
+          questionCell.textContent = '$' + questions[categoryIndex][i].value;
+          questionCell.dataset.category = categoryIndex;
+          questionCell.dataset.question = i;
+          questionCell.dataset.id = `${categoryIndex}-${i}`;
+          if (answeredQuestions[categoryIndex][i]) {
+            questionCell.classList.add('answered');
+          }
+          questionCell.addEventListener('click', () => {
+            if (!answeredQuestions[categoryIndex][i]) {
+              showQuestion(categoryIndex, i);
+            }
+          });
+          questionCell.tabIndex = 0;
+          questionCell.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !answeredQuestions[categoryIndex][i]) {
+              showQuestion(categoryIndex, i);
+            }
+          });
+          gameBoard.appendChild(questionCell);
+        });
+      }
+      checkGameCompletion();
+    }
+
+    function startTimer() {
+      timeLeft = 60;
+      timerDisplay.style.color = 'var(--dark)';
+      timerDisplay.textContent = `Time left: ${timeLeft}s`;
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = `Time left: ${timeLeft}s`;
+        if (timeLeft <= 10) {
+          timerDisplay.style.color = 'var(--accent)';
+        }
+        if (timeLeft <= 5) {
+          timerDisplay.style.color = '#e53935';
+        }
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          handleTimeout();
+        }
+      }, 1000);
+    }
+
+    function handleTimeout() {
+      if (!currentQuestion) return;
+      const { categoryIndex, questionIndex } = currentQuestion;
+      const question = questions[categoryIndex][questionIndex];
+      resultMessage.innerHTML = `<i class="fas fa-times-circle"></i> Time's up! The answer is: <strong>${question.answer}</strong>`;
+      resultMessage.className = 'result incorrect';
+      resultMessage.style.display = 'block';
+      incorrectSound.play();
+      disableOptions();
+      score -= Math.floor(question.value / 2);
+      score = Math.max(0, score);
+      scoreValue.textContent = score;
+      answeredQuestions[categoryIndex][questionIndex] = true;
+      const cell = document.querySelector(`.question-cell[data-id="${categoryIndex}-${questionIndex}"]`);
+      if (cell) cell.classList.add('answered');
+      setTimeout(() => { closeModal(); }, 3500);
+      checkGameCompletion();
+    }
+
+    function showQuestion(categoryIndex, questionIndex) {
+      currentQuestion = { categoryIndex, questionIndex };
+      const question = questions[categoryIndex][questionIndex];
+      modalQuestion.textContent = question.question;
+      optionsContainer.innerHTML = '';
+      resultMessage.style.display = 'none';
+      resultMessage.className = 'result';
+      
+      if (question.value >= 400) {
+        // Free response for 400 and 500
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'answer-input';
+        input.id = 'userAnswer';
+        input.placeholder = 'Type your answer here';
+        input.setAttribute('aria-label', 'Enter your answer');
+        
+        const submitBtn = document.createElement('button');
+        submitBtn.className = 'option-btn';
+        submitBtn.textContent = 'Submit';
+        submitBtn.addEventListener('click', () => checkAnswer(input.value));
+        
+        optionsContainer.style.gridTemplateColumns = '1fr'; // Adjust layout
+        optionsContainer.appendChild(input);
+        optionsContainer.appendChild(submitBtn);
+        
+        // Allow enter key to submit
+        input.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            checkAnswer(input.value);
+          }
+        });
+      } else {
+        // Multiple choice, shuffle options
+        let shuffledOptions = [...question.options].sort(() => Math.random() - 0.5);
+        shuffledOptions.forEach((option, index) => {
+          const optionBtn = document.createElement('button');
+          optionBtn.className = 'option-btn';
+          optionBtn.textContent = option;
+          optionBtn.dataset.option = option;
+          optionBtn.setAttribute('aria-label', `Option ${index + 1}: ${option}`);
+          optionBtn.addEventListener('click', () => checkAnswer(option));
+          optionsContainer.appendChild(optionBtn);
+        });
+      }
+      
+      questionModal.style.display = 'flex';
+      optionsContainer.querySelector(question.value >= 400 ? '#userAnswer' : '.option-btn').focus();
+      startTimer();
+    }
+
+    function normalize(str) {
+      return str.replace(/[^\w\s']|_/g, "").toLowerCase().trim();
+    }
+
+    function checkAnswer(selectedOption) {
+      if (!currentQuestion) return;
+      clearInterval(timerInterval);
+      const { categoryIndex, questionIndex } = currentQuestion;
+      const question = questions[categoryIndex][questionIndex];
+      const userAnswer = normalize(selectedOption);
+      const correctAnswer = normalize(question.answer);
+      const altAnswers = question.altAnswers ? question.altAnswers.map(normalize) : [];
+      const isCorrect = userAnswer === correctAnswer || altAnswers.includes(userAnswer);
+
+      if (isCorrect) {
+        score += question.value;
+        resultMessage.innerHTML = '<i class="fas fa-check-circle"></i> Correct!';
+        resultMessage.className = 'result correct';
+        correctSound.play();
+      } else {
+        resultMessage.innerHTML = `<i class="fas fa-times-circle"></i> Incorrect! The answer is: <strong>${question.answer}</strong>`;
+        resultMessage.className = 'result incorrect';
+        incorrectSound.play();
+      }
+      answeredQuestions[categoryIndex][questionIndex] = true;
+      const cell = document.querySelector(`.question-cell[data-id="${categoryIndex}-${questionIndex}"]`);
+      if (cell) cell.classList.add('answered');
+      
+      resultMessage.style.display = 'block';
+      disableOptions();
+      scoreValue.textContent = score;
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('highScore', highScore);
+        highScoreValue.textContent = highScore;
+      }
+      setTimeout(() => { closeModal(); }, 3000);
+      checkGameCompletion();
+    }
+
+    function disableOptions() {
+      const optionButtons = optionsContainer.querySelectorAll('.option-btn, .answer-input');
+      optionButtons.forEach(el => {
+        el.disabled = true;
+        el.style.cursor = 'default';
+      });
+    }
+
+    function checkGameCompletion() {
+      const allAnswered = answeredQuestions.every(category => category.every(answered => answered));
+      if (allAnswered) {
+        setTimeout(() => {
+          questionModal.style.display = 'flex';
+          modalQuestion.textContent = `Game Over! Your final score is: ${score}`;
+          optionsContainer.innerHTML = '';
+          resultMessage.style.display = 'none';
+          closeBtn.style.display = 'none';
+          const playAgainBtn = document.createElement('button');
+          playAgainBtn.textContent = 'Play Again';
+          playAgainBtn.className = 'option-btn';
+          playAgainBtn.addEventListener('click', () => {
+            resetGame();
+            questionModal.style.display = 'none';
+            closeBtn.style.display = 'flex';
+          });
+          optionsContainer.appendChild(playAgainBtn);
+        }, 1000);
+      }
+    }
+
+    function closeModal() {
+      questionModal.style.display = 'none';
+      clearInterval(timerInterval);
+      currentQuestion = null;
+    }
+
+    function resetGame() {
+      score = 0;
+      scoreValue.textContent = score;
+      answeredQuestions = Array(categories.length).fill().map(() => Array(5).fill(false));
+      initializeGameBoard();
+      closeModal();
+    }
+
+    closeBtn.addEventListener('click', closeModal);
+    resetBtn.addEventListener('click', resetGame);
+    window.addEventListener('click', e => {if (e.target === questionModal) closeModal();});
+    initializeGameBoard();
+  </script>
+</body>
+</html>
